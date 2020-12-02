@@ -1,4 +1,3 @@
-import qualified Data.List as L
 import System.IO
 
 main :: IO()
