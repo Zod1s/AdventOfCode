@@ -1,7 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
 import System.IO
-import Data.Char(digitToInt)
 
 main :: IO()
 main = do
