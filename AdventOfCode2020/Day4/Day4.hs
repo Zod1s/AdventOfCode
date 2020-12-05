@@ -1,6 +1,7 @@
 import System.IO
 import Data.List.Split(splitOn)
 import Data.Char(isDigit, isHexDigit)
+import Data.List((\\))
 
 compFields :: [[(String, String)] -> Maybe String]
 compFields = [ lookup "byr"
@@ -11,44 +12,52 @@ compFields = [ lookup "byr"
              , lookup "ecl"
              , lookup "pid"]
 
-checkValidity :: [Maybe String -> Bool]
-checkValidity = [ checkByr
-                , checkIyr
-                , checkEyr
-                , checkHgt
-                , checkHcl
-                , checkEcl
-                , checkPid]
+checkValidity :: [[(String, String)] -> Bool]
+checkValidity = [ checkByr . lookup "byr"
+                , checkIyr . lookup "iyr"
+                , checkEyr . lookup "eyr"
+                , checkHgt . lookup "hgt"
+                , checkHcl . lookup "hcl"
+                , checkEcl . lookup "ecl"
+                , checkPid . lookup "pid"]
 
 checkByr :: Maybe String -> Bool
 checkByr (Just x) = all isDigit x && length x == 4 && (read x :: Int) >= 1920 && (read x :: Int) <= 2002 
+checkByr _ = False
 
 checkIyr :: Maybe String -> Bool
 checkIyr (Just x) = all isDigit x && length x == 4 && (read x :: Int) >= 2010 && (read x :: Int) <= 2020
+checkIyr _ = False
 
 checkEyr :: Maybe String -> Bool
 checkEyr (Just x) = all isDigit x && length x == 4 && (read x :: Int) >= 2020 && (read x :: Int) <= 2030
+checkEyr _ = False
 
 checkHgt :: Maybe String -> Bool
-checkHgt (Just x) = length x > 3 && isValid x
-  where isValid x = isDig && ((unit == "cm" && x' >= 150 && x' <= 193) || (unit == "in" && x' >= 59 && x' <= 76))
-          where unit = last (tail x) : [last x]
-                isDig = all isDigit (init (init x))
-                x' = (read (init (init x)) :: Int)
+checkHgt (Just x) = length x >= 3 && isValid x
+  where isValid m = isDig && ((unit == "cm" && x' >= 150 && x' <= 193) || (unit == "in" && x' >= 59 && x' <= 76))
+          where unit = reverse [last (tail m), last m]
+                dim = m \\ unit
+                isDig = all isDigit dim
+                x' = (read dim :: Int)
+checkHgt _ = False
 
 checkHcl :: Maybe String -> Bool
 checkHcl (Just (x:rest)) = length rest == 6 && x == '#' && all isHexDigit rest
+checkHcl _ = False
 
 checkEcl :: Maybe String -> Bool
 checkEcl (Just x) = length x == 3 && elem x ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
+checkEcl _ = False
 
 checkPid :: Maybe String -> Bool
 checkPid (Just x) = length x == 9 && all isDigit x
+checkPid _ = False
 
 main :: IO()
 main = do
   input <- (filter (\x -> x /= "") . splitOn "\n\n") <$> readFile "input.txt"
-  let input' = map cond2 $ filter (\x -> length x > 6) $ map toLookup input
+  let input' = filter cond2 $ filter (\x -> length x > 6) $ map toLookup input
   print input'
 
 toLookup :: String -> [(String, String)]
@@ -60,10 +69,10 @@ cond1 :: [(String, String)] -> Bool
 cond1 lookupTable = all (/= Nothing) (fmap ($ lookupTable) compFields)
 
 cond2 :: [(String, String)] -> Bool
-cond2 lookupTable = all (/= Nothing) valuesFound && check valuesFound
-  where valuesFound = (fmap ($ lookupTable) compFields)
-
-check :: [Maybe String] -> Bool
-check xs = if length xs == 7
-           then and (zipWith id checkValidity xs)
-           else and (zipWith id checkValidity (init xs))
+cond2 lookupTable = if length lookupTable == 7
+                    then and (fmap ($ lookupTable) checkValidity) 
+                    else and (fmap ($ lookupTable) (checkValidity ++ [const True . lookup "cid"]))
+{-
+then and (zipWith id checkValidity xs)
+else and (zipWith id checkValidity (init xs))
+-}
