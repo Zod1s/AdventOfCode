@@ -1,12 +1,6 @@
 import System.IO
 import Data.List(sort)
 
--- F = 0
--- B = 1
--- L = 0
--- R = 1
--- id = fb * 8 + lr
-
 main :: IO()
 main = do
   inputs <- lines <$> readFile "input.txt"
