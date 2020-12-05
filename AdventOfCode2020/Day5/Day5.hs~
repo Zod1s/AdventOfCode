@@ -1,5 +1,0 @@
-import System.IO
-
-main :: IO()
-main = do
-  inputs <- lines <$> readFile "input.txt"
