@@ -34,12 +34,13 @@ checkEyr (Just x) = all isDigit x && length x == 4 && (read x :: Int) >= 2020 &&
 checkEyr _ = False
 
 checkHgt :: Maybe String -> Bool
-checkHgt (Just x) = length x >= 3 && isValid x
-  where isValid m = isDig && ((unit == "cm" && x' >= 150 && x' <= 193) || (unit == "in" && x' >= 59 && x' <= 76))
-          where unit = reverse [last (tail m), last m]
-                dim = m \\ unit
-                isDig = all isDigit dim
-                x' = (read dim :: Int)
+checkHgt (Just x) = length x > 3 && isValid x
+  where isValid m = case unit of
+                      "cm" -> x' >= 150 && x' <= 193
+                      "in" -> x' >= 59 && x' <= 76
+                      _ -> False
+          where x' = read dim
+                (dim, unit) = span isDigit x
 checkHgt _ = False
 
 checkHcl :: Maybe String -> Bool
@@ -58,7 +59,7 @@ main :: IO()
 main = do
   input <- (filter (\x -> x /= "") . splitOn "\n\n") <$> readFile "input.txt"
   let input' = filter cond2 $ filter (\x -> length x > 6) $ map toLookup input
-  print input'
+  print $ length input'
 
 toLookup :: String -> [(String, String)]
 toLookup inp = map toTuple inp'
@@ -69,10 +70,4 @@ cond1 :: [(String, String)] -> Bool
 cond1 lookupTable = all (/= Nothing) (fmap ($ lookupTable) compFields)
 
 cond2 :: [(String, String)] -> Bool
-cond2 lookupTable = if length lookupTable == 7
-                    then and (fmap ($ lookupTable) checkValidity) 
-                    else and (fmap ($ lookupTable) (checkValidity ++ [const True . lookup "cid"]))
-{-
-then and (zipWith id checkValidity xs)
-else and (zipWith id checkValidity (init xs))
--}
+cond2 lookupTable = and (fmap ($ lookupTable) checkValidity)
