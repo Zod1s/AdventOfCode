@@ -4,7 +4,7 @@ import Data.List(sort)
 main :: IO()
 main = do
   inputs <- lines <$> readFile "input.txt"
-  print $ sort $ map convert inputs -- part2 done by looking at the sorted list (527)
+  print $ missing $ map convert inputs
 
 convert :: String -> Int
 convert (a:b:c:d:e:f:g:h:i:j:[]) = if valid
@@ -15,3 +15,9 @@ convert _ = -1
 
 convert' :: Char -> String -> Int
 convert' ctrl str = foldl (\acc x -> x + 2 * acc) 0 $ map (\x -> if x == ctrl then 0 else 1) str
+
+missing :: [Int] -> Int
+missing list = head [x | x <- [m1..m2], not (elem x list')]
+  where m1 = head list'
+        m2 = last list'
+        list' = sort list
