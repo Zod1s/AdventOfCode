@@ -63,16 +63,13 @@ halts code = go code 0 0 []
 
 part2 :: [Instruction] -> Int
 part2 code = halted
-  where modif = modify code
-        (Just halted) = head $ filter (\x -> x /= Nothing) $ map halts modif
+  where (Just halted) = head $ filter (\x -> x /= Nothing) $ map halts $ modify code
 
 modify :: [Instruction] -> [[Instruction]]
-modify code = [h ++ [swap c] ++ tt | i <- idxs, let h = take i code
-                                                      , let t = drop i code
-                                                              , let c = head t, let tt = tail t]
+modify code = [h ++ [swap (head t)] ++ (tail t) | i <- idxs, let (h, t) = splitAt i code]
   where idxs = go 0 code
         go !i [] = []
-        go !i (c:cs) = if c == (NOP 0) || c == (JMP 0)
+        go !i (c:cs) = if c /= (ACC 0)
                        then i : (go (i + 1) cs)
                        else (go (i + 1) cs)
         swap (NOP x) = JMP x
