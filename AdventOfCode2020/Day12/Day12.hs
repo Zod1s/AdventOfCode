@@ -21,65 +21,71 @@ instance Num Complex where
   abs _ = undefined
   fromInteger _ = undefined
 
-data Ship = Sh Dir Pos
+data Ship = Sh Complex Complex
           deriving(Show)
 
 data Command = M Complex
              | R Complex
              | L Complex
              | F Complex
-             deriving(Show)
-
-instance Eq Command where
-  (M _) == (M _) = True
-  (R _) == (R _) = True
-  (L _) == (L _) = True
-  (F _) == (F _) = True
-  _ == _ = False
+             deriving(Show, Eq)
 
 instance Read Command where
   readsPrec _ input =
     let instr = case input of
-                  ('N':rest) -> M $ ((read rest) :+ 0)
-                  ('S':rest) -> M $ ((negate $ read rest) :+ 0)
-                  ('W':rest) -> M $ (0 :+ (negate $ read rest))
-                  ('E':rest) -> M $ (0 :+ (read rest))
-                  ('R':rest) -> R $ rotationR rest
-                  ('L':rest) -> L $ rotationR rest
+                  ('N':rest) -> M $ (0 :+ (read rest))
+                  ('S':rest) -> M $ (0 :+ (negate $ read rest))
+                  ('E':rest) -> M $ ((read rest) :+ 0)
+                  ('W':rest) -> M $ ((negate $ read rest) :+ 0)
+                  ('R':rest) -> R $ rotation (-1) rest
+                  ('L':rest) -> L $ rotation   1  rest
                   ('F':rest) -> F $ moveF rest
     in (\p -> [(instr, "")]) input
 
-type Dir = Complex
-
-type Pos = Complex
-
-rotationR, rotationL, moveF :: String -> Complex
-rotationR str = cis a
+rotation :: Int -> String -> Complex
+rotation d str = cis a
   where amt = read str :: Int
-        a = Degrees (fromIntegral (-amt))
-rotationL str = cis a
-  where amt = read str :: Int
-        a = Degrees (fromIntegral amt)
+        a = Degrees (fromIntegral (d * amt))
+
+moveF :: String -> Complex
 moveF str = amt :+ 0
   where amt = read str :: Int
 
+manhattan :: Complex -> Int
+manhattan (x :+ y) = (abs x) + (abs y)
+
 main :: IO()
 main = do
-  input <- (map (\x -> read x :: Command) . lines) <$> readFile "test.txt"
-  print $ part1 input
+  input <- (map (\x -> read x :: Command) . lines) <$> readFile "input.txt"
+  print $ part2 input
 
 part1 :: [Command] -> Int
-part1 cmds = manhattan (eval cmds ship)
-  where ship = Sh (0 :+ 1) (0 :+ 0)
-        manhattan (x :+ y) = (abs x) + (abs y)
+part1 cmds = manhattan (eval1 cmds ship)
+  where ship = Sh (1 :+ 0) (0 :+ 0)
 
-eval :: [Command] -> Ship -> Pos
-eval [] (Sh _ pos) = pos
-eval ((F amt):cmds) (Sh dir pos) = eval cmds ship'
+eval1 :: [Command] -> Ship -> Complex
+eval1 [] (Sh _ pos) = pos
+eval1 ((F amt):cmds) (Sh dir pos) = eval1 cmds ship'
   where ship' = Sh dir (pos + dir * amt)
-eval ((R rot):cmds) (Sh dir pos) = eval cmds ship'
+eval1 ((R rot):cmds) (Sh dir pos) = eval1 cmds ship'
   where ship' = Sh (dir * rot) pos
-eval ((L rot):cmds) (Sh dir pos) = eval cmds ship'
+eval1 ((L rot):cmds) (Sh dir pos) = eval1 cmds ship'
   where ship' = Sh (dir * rot) pos
-eval ((M mov):cmds) (Sh dir pos) = eval cmds ship'
+eval1 ((M mov):cmds) (Sh dir pos) = eval1 cmds ship'
   where ship' = Sh dir (mov + pos)
+
+
+part2 :: [Command] -> Int
+part2 cmds = manhattan (eval2 cmds ship)
+  where ship = Sh (10 :+ 1) (0 :+ 0)
+
+eval2 :: [Command] -> Ship -> Complex
+eval2 [] (Sh _ pos) = pos
+eval2 ((F amt):cmds) (Sh way pos) = eval2 cmds ship'
+  where ship' = Sh way (pos + way * amt)
+eval2 ((R rot):cmds) (Sh way pos) = eval2 cmds ship'
+  where ship' = Sh (way * rot) pos
+eval2 ((L rot):cmds) (Sh way pos) = eval2 cmds ship'
+  where ship' = Sh (way * rot) pos
+eval2 ((M mov):cmds) (Sh way pos) = eval2 cmds ship'
+  where ship' = Sh (mov + way) pos
