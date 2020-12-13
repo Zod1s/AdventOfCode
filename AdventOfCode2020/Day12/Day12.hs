@@ -74,7 +74,6 @@ eval1 ((L rot):cmds) (Sh dir pos) = eval1 cmds ship'
 eval1 ((M mov):cmds) (Sh dir pos) = eval1 cmds ship'
   where ship' = Sh dir (mov + pos)
 
-
 part2 :: [Command] -> Int
 part2 cmds = manhattan (eval2 cmds ship)
   where ship = Sh (10 :+ 1) (0 :+ 0)
