@@ -1,6 +1,6 @@
 import System.IO() 
 import Data.Char(isDigit, digitToInt)
--- Use Map
+
 data Instruction = Mask String
                  | Write Address Value
                  deriving (Show, Eq)
@@ -32,23 +32,25 @@ decToBin' n = (decToBin' (div n 2)) ++ (show (rem n 2))
 binToDec :: String -> Integer
 binToDec b = foldl1 (\acc x -> x + 2 * acc) (map (toInteger . digitToInt) b)
 
-mask :: String -> String -> String
-mask m val = zipWith f m val
+mask1 :: String -> String -> String
+mask1 m val = zipWith f m val
   where f '1' _ = '1'
         f '0' _ = '0'
         f 'X' x = x
 
 part1 :: [Instruction] -> Integer
 part1 instr = sum vals
-  where mem = eval instr "" []
+  where mem = eval1 instr "" []
         vals = fmap ((\x -> binToDec x) . snd) mem
 
-eval :: [Instruction] -> String -> Memory -> Memory
-eval ((Mask m):instr) _ mem = eval instr m mem
-eval ((Write address value):instr) curMask mem = case lookup address mem of
-                                                   Just _ -> changeVal mem address newValue
-                                                   Nothing -> eval instr curMask ((address, newValue) : mem)
-  where newValue = mask curMask value
+eval1 :: [Instruction] -> String -> Memory -> Memory
+eval1 ((Mask m):instr) _ mem = eval1 instr m mem
+eval1 ((Write address value):instr) curMask mem = case lookup address mem of
+                                                   Just _ -> eval1 instr curMask newMem
+                                                   Nothing -> eval1 instr curMask ((address, newValue) : mem)
+  where newValue = mask1 curMask value
+        newMem = (changeVal mem address newValue)
+eval1 _ _ mem = mem
 
 changeVal :: Memory -> Int -> String -> Memory
 changeVal mem address value = fmap (\(x, y) -> if x == address then (address, value) else (x, y)) mem
