@@ -15,10 +15,10 @@ go :: Int -> [Int] -> Int -> Int
 go m l !i = if m == i
             then head l
             else case index of
-                   Nothing -> go m (0 : l) (i + 1)
-                   Just ii -> go m ((1 + ii) : l) (i + 1)
-  where lastN = head l
-        index = elemIndex lastN (tail l)
+                  Nothing -> go m (0 : l) (i + 1)
+                  Just ii -> go m ((1 + ii) : l) (i + 1)
+    where lastN = head l
+          index = elemIndex lastN (tail l)
 
 main :: IO()
 main = print $ part2 input

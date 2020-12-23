@@ -3,23 +3,27 @@ import Data.Char(digitToInt)
 
 main :: IO()
 main = do
-  handle <- openFile "input.txt" ReadMode 
-  contents <- hGetContents handle
-  let passwords = lines contents
-  print $ length $ filter cond2 passwords
+    input <- lines <$> readFile "input.txt"
+    print $ part1 input
+
+part1 :: [String] -> Int
+part1 = length . (filter cond1)
+
+part2 :: [String] -> Int
+part2 = length . (filter cond2)
 
 cond1 :: String -> Bool
 cond1 pass = len >= lower && len <= upper
-  where (lo, up, c, rest) = format pass
-        lower = convert lo
-        upper = convert up
-        len = length $ filter (\x -> x == c) rest
+    where (lo, up, c, rest) = format pass
+          lower = convert lo
+          upper = convert up
+          len = length $ filter (\x -> x == c) rest
 
 cond2 :: String -> Bool
 cond2 pass = (rest !! (first - 1) == c) /= (rest !! (second - 1) == c)
-  where (lo, up, c, rest) = format pass
-        first = convert lo
-        second = convert up
+    where (lo, up, c, rest) = format pass
+          first = convert lo
+          second = convert up
 
 format :: String -> (String, String, Char, String)
 format (m:'-':ma:' ':l:':':' ':rest) = ([m], [ma], l, rest)

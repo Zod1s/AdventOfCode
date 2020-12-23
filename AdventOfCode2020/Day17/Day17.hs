@@ -2,5 +2,5 @@ import System.IO
 
 main :: IO()
 main = do
-  input <- lines <$> readFile "input.txt"
-  print input
+    input <- lines <$> readFile "input.txt"
+    print input
