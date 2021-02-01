@@ -1,22 +1,19 @@
 import System.IO
-
-data Token = ADD Token Token
-           | MUL Token Token
-           | OPR Token
-           | CPR
-           | INT Int
+import Control.Monad.ST
+import Data.STRef
 
 main :: IO()
 main = do
     input <- (map (filter (\x -> x /= '\r' && x /= ' ')) . lines) <$> readFile "input.txt"
-    print input
+    print $ head input
 
-part1 :: [String] -> [Int]
-part1 ls = undefined
+-- reverse' :: String -> String
+-- reverse' [] = []
+-- reverse' [x] = if x == '(' then ")" else if x == ')' then "(" else [x]
+-- reverse' (x:xs) = if x == '(' then (reverse' xs) ++ ")" else if x == ')' then (reverse' xs) ++ "(" else (reverse' xs) ++ [x]
+
+part1 :: [String] -> Int
+part1 str = undefined
 
 eval :: String -> Int
-eval str = undefined
-
-parse :: String -> Token
-parse xs = undefined
--- foldr con acc lista di int fatta a stack
+eval str = 
